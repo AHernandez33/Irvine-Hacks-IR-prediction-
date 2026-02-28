@@ -88,7 +88,7 @@ def atom_features(atom):
 
     features = one_hot + hyb_enc + [
         float(atom.GetAtomicNum()) / 100.0,
-        float(atom.GetTotalDegree()) / 6.0
+        float(atom.GetTotalDegree()) / 6.0,
         float(atom.GetFormalCharge()) / 4.0,
         float(atom.GetTotalNumHs()) / 4.0,
         float(atom.IsInRing()),
@@ -198,11 +198,11 @@ class ShiftedSoftplus(nn.Module):
 
 class CFConv(nn.Module):
     """Continuous-filter convolution - the core SchNet operation"""
-    def __inti__(self, in_channels, out_channels, num_filters, num_gaussians):
+    def __init__(self, in_channels, out_channels, num_filters, num_gaussians):
         super().__init__()
         self.lin1 = nn.Linear(in_channels, num_filters)
         self.lin2 = nn.Linear(num_filters, out_channels)
-        self.filter_net == nn.Sequential(
+        self.filter_net = nn.Sequential(
             nn.Linear(num_gaussians, num_filters),
             ShiftedSoftplus(),
             nn.Linear(num_filters, num_filters),
@@ -262,8 +262,8 @@ class SchNet(nn.Module):
             nn.Linear(hidden_dim, hidden_dim // 2),
             ShiftedSoftplus(),
             nn.Dropout(DROPOUT),
-            nn.Linear(hidden_dim // 2, output_dim)
-            nn.Sigmoid()
+            nn.Linear(hidden_dim // 2, output_dim),
+            nn.Sigmoid(),
         )
 
     def forward(self, data):
