@@ -189,7 +189,7 @@ Atom features (23-dim)
   │  ─────────────────  │
   │  CFConv (distance-  │
   │  weighted messages) │
-  │  + Dropout (15%)    │
+  │  + Dropout (0.1%)    │
   └─────────────────────┘
         ↓
   Global sum pooling
@@ -203,14 +203,14 @@ Atom features (23-dim)
 
 | Parameter | Value |
 |-----------|-------|
-| Hidden dimension | 64 |
-| Interaction blocks | 2 |
+| Hidden dimension | 128 |
+| Interaction blocks | 3 |
 | Cutoff radius | 5.0 Å |
 | Gaussian basis functions | 50 |
-| Dropout | 15% |
-| Weight decay | 1e-4 |
+| Dropout | 0.1% |
+| Weight decay | 1e-5 |
 | Optimizer | Adam (lr=1e-3) |
-| Early stopping patience | 25 epochs |
+| Early stopping patience | 40 epochs |
 
 ---
 
