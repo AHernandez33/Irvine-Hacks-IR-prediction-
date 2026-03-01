@@ -42,15 +42,15 @@ from rdkit.Chem.rdchem import HybridizationType
 
 N_POINTS      = 250
 CUTOFF        = 5.0      # Å — SchNet interaction cutoff radius
-HIDDEN_DIM    = 64       # smaller model → less overfitting on ~130 molecules
-NUM_FILTERS   = 64
-NUM_INTER     = 2        # 2 interaction blocks is enough for small datasets
+HIDDEN_DIM    = 128       # smaller model → less overfitting on ~130 molecules
+NUM_FILTERS   = 128
+NUM_INTER     = 3        # 3 interaction blocks is enough for small datasets
 BATCH_SIZE    = 16
-MAX_EPOCHS    = 300
+MAX_EPOCHS    = 600
 LR            = 1e-3
-WEIGHT_DECAY  = 1e-4     # L2 regularization
-DROPOUT       = 0.15     # dropout rate throughout the model
-PATIENCE      = 25       # early stopping patience
+WEIGHT_DECAY  = 1e-5     # L2 regularization
+DROPOUT       = 0.001     # dropout rate throughout the model
+PATIENCE      = 40       # early stopping patience
 DEVICE        = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Seed for reproducibility
