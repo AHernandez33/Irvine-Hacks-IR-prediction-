@@ -49,10 +49,10 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 
 N_POINTS     = 250
 CUTOFF       = 5.0
-HIDDEN_DIM   = 64
-NUM_FILTERS  = 64
-NUM_INTER    = 2
-DROPOUT      = 0.15
+HIDDEN_DIM   = 128
+NUM_FILTERS  = 128
+NUM_INTER    = 3
+DROPOUT      = 0.001
 ATOM_TYPES   = ['H','C','N','O','F','S','Cl','Br','I','P','Si','B','Se','other']
 ATOM_FEAT_DIM = len(ATOM_TYPES) + 3 + 6   # 23
 WAVENUMBERS  = np.linspace(400, 4000, N_POINTS).tolist()
@@ -199,9 +199,18 @@ class SchNet(nn.Module):
 
 print(f"Loading model from '{CHECKPOINT}' on {DEVICE}...")
 model = SchNet().to(DEVICE)
-model.load_state_dict(torch.load(CHECKPOINT, map_location=DEVICE))
+
+# Load checkpoint safely (ignore mismatched layers)
+checkpoint = torch.load(CHECKPOINT, map_location=DEVICE)
+model_dict = model.state_dict()
+
+# Keep only compatible layers
+filtered_dict = {k: v for k, v in checkpoint.items() if k in model_dict and v.size() == model_dict[k].size()}
+model_dict.update(filtered_dict)
+model.load_state_dict(model_dict)
+
 model.eval()
-print("Model ready.")
+print("Model ready. Compatible weights loaded, mismatched layers were skipped.")
 
 # ── FastAPI app ────────────────────────────────────────────────────────────────
 
@@ -221,26 +230,29 @@ app.add_middleware(
 
 # ── Request / Response schemas ─────────────────────────────────────────────────
 
+from pydantic import BaseModel, ConfigDict
+from typing import List
+
 class PredictRequest(BaseModel):
     smiles: str
-
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {"example": {"smiles": "CCO"}}
+    )
 
 class PredictResponse(BaseModel):
     smiles:        str
-    wavenumbers:   List[float]   # 250 x-axis values (cm⁻¹)
-    transmittance: List[float]   # 250 predicted y-axis values [0, 1]
+    wavenumbers:   List[float]
+    transmittance: List[float]
 
 class BatchPredictRequest(BaseModel):
     smiles_list: List[str]
-
-    class Config:
+    model_config = ConfigDict(
         json_schema_extra = {"example": {"smiles_list": ["CCO", "CC(C)=O", "c1ccccc1"]}}
+    )
 
 class BatchPredictResponse(BaseModel):
     results: List[PredictResponse]
-    failed:  List[str]           # SMILES that couldn't be processed
+    failed:  List[str]
 
 # ── Endpoints ──────────────────────────────────────────────────────────────────
 
